@@ -2,9 +2,12 @@
 
 /**
  * Provides validationGroup xtype
- * Expects xtype="validationGroup"
+ *
+ * dialog.xml
  * Expects validationSettings attribute
- * Expects single child: <items>, that in turn contains the fields to be validated
+ * Expects single child: <items>...</items>, that in turn contains the fields to be validated
+ * Error Message is supplied by an item with attribute isValidationErrorMessage="yes"
+ * Fields to Validate are flagged by adding attribute checkValidity="yes"
  *
  * dialog.xml snippet:
  * <example>
@@ -14,27 +17,37 @@
  *              xtype="validationGroup"
  *              collapsed="{Boolean}false"
  *              collapsible="{Boolean}false"
- *              validationSettings='"criteria":{"min":1}, "fieldtype":"textfield", "message":"Please enter at least one Social Networking link."'>
+ *              validationSettings='"criteria":{"min":1}'>
  *         <items jcr:primaryType="cq:WidgetCollection">
+ *             <static
+ *                      jcr:primaryType="cq:Widget"
+ *                      isValidationErrorMessage="yes"
+ *                      xtype="static"
+ *                      style="color:red; margin:0 0 10px;"
+ *                      text="Please enter at least one Social Networking link."/>
  *             <twitterLink
  *                      jcr:primaryType="cq:Widget"
  *                      fieldLabel="Twitter Link"
  *                      name="./twitterLink"
+ *                      checkValidity="yes"
  *                      xtype="textfield"/>
  *             <linkedinLink
  *                      jcr:primaryType="cq:Widget"
  *                      fieldLabel="LinkedIn Link"
  *                      name="./linkedinLink"
+ *                      checkValidity="yes"
  *                      xtype="textfield"/>
  *             <facebookLink
  *                      jcr:primaryType="cq:Widget"
  *                      fieldLabel="Facebook Link"
  *                      name="./facebookLink"
+ *                      checkValidity="yes"
  *                      xtype="textfield"/>
  *             <githubLink
  *                      jcr:primaryType="cq:Widget"
  *                      fieldLabel="GitHub Link"
  *                      name="./githubLink"
+ *                      checkValidity="yes"
  *                      xtype="textfield"/>
  *         </items>
  *     </validationGroup>
@@ -54,21 +67,32 @@ Ejst.CustomWidget = CQ.Ext.extend(CQ.form.DialogFieldSet, {
     // overriding CQ.Ext.Component#initComponent
     initComponent: function() {
         "use strict";
+
+
         var me = this;
-        var dialog = me.findParentByType('dialog');
 
         Ejst.CustomWidget.superclass.initComponent.call(me);
 
-        // beforesubmit handler
-        dialog.on('beforesubmit', function(){
+        var options = JSON.parse('{'+(me.validationSettings||'')+'}');
+
+        if(!options.criteria){
+            return;
+        }
+
+        var errorMessageElement = me.find('isValidationErrorMessage', 'yes')[0];
+        errorMessageElement.hide();
+
+        // beforesubmit handler - do the validation
+        me.findParentByType('dialog').on('beforesubmit', function(){
             var isValid = false;
-            var options = JSON.parse('{'+(me.validationSettings||'')+'}');
-            console.log('validation group :: options : ', options);
-            if(!options.criteria){
-                return;
-            }
-            var fields = options.fieldtype ? me.findByType(options.fieldtype) : me.items;
+            var fields = me.find('checkValidity', 'yes');
+
+            console.log('fields', fields);
+
+            // anticipating other validation types, may need to update this reference during validation processing
             var fieldToFocus = fields[0];
+
+            errorMessageElement.hide();
 
             for(var i = 0, l = fields.length; i < l; i++){
                 var field = fields[i];
@@ -90,9 +114,7 @@ Ejst.CustomWidget = CQ.Ext.extend(CQ.form.DialogFieldSet, {
 
                 // bring focus to the field that needs correct user input
                 fieldToFocus.focus();
-
-                // todo - would be nice to show this inside the dialog
-                CQ.Notification.notify(CQ.I18n.getMessage("Validation Error"),CQ.I18n.getMessage(options.message));
+                errorMessageElement.show();
 
             }
 
