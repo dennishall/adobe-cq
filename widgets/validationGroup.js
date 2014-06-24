@@ -62,7 +62,7 @@ Ejst.CustomWidget = CQ.Ext.extend(CQ.form.DialogFieldSet, {
         // beforesubmit handler
         dialog.on('beforesubmit', function(){
             var isValid = false;
-            var options = JSON.parse('{'+(me.customValidation||'')+'}');
+            var options = JSON.parse('{'+(me.validationSettings||'')+'}');
             console.log('validation group :: options : ', options);
             if(!options.criteria){
                 return;
@@ -92,10 +92,7 @@ Ejst.CustomWidget = CQ.Ext.extend(CQ.form.DialogFieldSet, {
                 fieldToFocus.focus();
 
                 // todo - would be nice to show this inside the dialog
-                CQ.Notification.notify(
-                    CQ.I18n.getMessage("Validation Error"),
-                    CQ.I18n.getMessage(options.message)
-                );
+                CQ.Notification.notify(CQ.I18n.getMessage("Validation Error"),CQ.I18n.getMessage(options.message));
 
             }
 
