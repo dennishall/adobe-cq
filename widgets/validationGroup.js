@@ -68,7 +68,6 @@ Ejst.CustomWidget = CQ.Ext.extend(CQ.form.DialogFieldSet, {
     initComponent: function() {
         "use strict";
 
-
         var me = this;
 
         Ejst.CustomWidget.superclass.initComponent.call(me);
@@ -86,8 +85,6 @@ Ejst.CustomWidget = CQ.Ext.extend(CQ.form.DialogFieldSet, {
         me.findParentByType('dialog').on('beforesubmit', function(){
             var isValid = false;
             var fields = me.find('checkValidity', 'yes');
-
-            console.log('fields', fields);
 
             // anticipating other validation types, may need to update this reference during validation processing
             var fieldToFocus = fields[0];
